@@ -225,4 +225,111 @@ final class InteractiveAuthorizationHandlerTests: XCTestCase {
             )
         }
     }
+    func test_handle_accepts_iae_presentation_type() async throws {
+
+        let initialNetwork = MockNetworkManager()
+
+        let json: [String: Any] = [
+            "type": "urn:openid:dcp:iae:openid4vp_presentation",
+            "status": "require_interaction",
+            "auth_session": "s",
+            "openid4vp_request": [
+                "response_type": "vp_token",
+                "response_mode": "iar-post"
+            ]
+        ]
+
+        let data = try JSONSerialization.data(withJSONObject: json)
+        initialNetwork.responseBody = String(data: data, encoding: .utf8) ?? ""
+
+        let handler = InteractiveAuthorizationHandler(networkManager: initialNetwork)
+
+        do {
+            _ = try await handler.handle(
+                endpoint: "https://issuer.example.com/iar",
+                clientMetadata: self.makeClientMetadata(),
+                credentialConfigurationId: "cfg-1",
+                authorizationMethods: self.makeAuthMethods(
+                    select: { _ in [:] },
+                    sign: { _ in [] }
+                ),
+                pkceSession: self.makePKCE()
+            )
+        } catch let error as InteractiveAuthorizationException {
+            XCTAssertFalse(
+                error.message.contains("Invalid presentation interaction response")
+            )
+        }
+    }
+    func test_handle_accepts_iae_post_response_mode() async throws {
+
+        let initialNetwork = MockNetworkManager()
+
+        let json: [String: Any] = [
+            "type": InteractionType.openId4VpPresentation.rawValue,
+            "status": "require_interaction",
+            "auth_session": "s",
+            "openid4vp_request": [
+                "response_type": "vp_token",
+                "response_mode": "iae_post"
+            ]
+        ]
+
+        let data = try JSONSerialization.data(withJSONObject: json)
+        initialNetwork.responseBody = String(data: data, encoding: .utf8) ?? ""
+
+        let handler = InteractiveAuthorizationHandler(networkManager: initialNetwork)
+
+        do {
+            _ = try await handler.handle(
+                endpoint: "https://issuer.example.com/iar",
+                clientMetadata: self.makeClientMetadata(),
+                credentialConfigurationId: "cfg-1",
+                authorizationMethods: self.makeAuthMethods(
+                    select: { _ in [:] },
+                    sign: { _ in [] }
+                ),
+                pkceSession: self.makePKCE()
+            )
+        } catch let error as InteractiveAuthorizationException {
+            XCTAssertFalse(
+                error.message.contains("Invalid presentation interaction response")
+            )
+        }
+    }
+    func test_handle_accepts_iae_post_jwt_response_mode() async throws {
+
+        let initialNetwork = MockNetworkManager()
+
+        let json: [String: Any] = [
+            "type": InteractionType.openId4VpPresentation.rawValue,
+            "status": "require_interaction",
+            "auth_session": "s",
+            "openid4vp_request": [
+                "request": "aaa.eyJyZXNwb25zZV9tb2RlIjoiaWFlX3Bvc3Quand0In0.bbb"
+            ]
+        ]
+
+        let data = try JSONSerialization.data(withJSONObject: json)
+        initialNetwork.responseBody = String(data: data, encoding: .utf8) ?? ""
+
+        let handler = InteractiveAuthorizationHandler(networkManager: initialNetwork)
+
+        do {
+            _ = try await handler.handle(
+                endpoint: "https://issuer.example.com/iar",
+                clientMetadata: self.makeClientMetadata(),
+                credentialConfigurationId: "cfg-1",
+                authorizationMethods: self.makeAuthMethods(
+                    select: { _ in [:] },
+                    sign: { _ in [] }
+                ),
+                pkceSession: self.makePKCE()
+            )
+        } catch let error as InteractiveAuthorizationException {
+            XCTAssertFalse(
+                error.message.contains("Invalid presentation interaction response")
+            )
+        }
+    }
 }
