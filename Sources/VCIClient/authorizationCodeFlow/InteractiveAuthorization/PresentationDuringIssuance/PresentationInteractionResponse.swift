@@ -81,8 +81,14 @@ final class PresentationInteractionResponse: InteractionResponse, Decodable {
     }
     
     override func validate() throws {
-        guard let type = type, type == "openid4vp_presentation" else {
-            throw IllegalArgumentException("Invalid type: expected 'openid4vp_presentation'")
+        
+        guard let type = type,
+              type == "openid4vp_presentation"
+              || type == "urn:openid:dcp:iae:openid4vp_presentation"
+        else {
+            throw IllegalArgumentException(
+                "Invalid type: expected 'openid4vp_presentation' or 'urn:openid:dcp:iae:openid4vp_presentation'"
+            )
         }
 
         guard !openid4vpRequest.isEmpty else {
@@ -121,8 +127,14 @@ final class PresentationInteractionResponse: InteractionResponse, Decodable {
         guard let responseMode = vpRequest["response_mode"] as? String else {
             throw IllegalArgumentException("Missing or invalid 'response_mode'")
         }
-        guard responseMode == "iar-post" || responseMode == "iar-post.jwt" else {
-            throw IllegalArgumentException("response_mode must be 'iar-post' or 'iar-post.jwt'")
+        guard responseMode == "iar-post"
+            || responseMode == "iar-post.jwt"
+            || responseMode == "iae_post"
+            || responseMode == "iae_post.jwt"
+        else {
+            throw IllegalArgumentException(
+                "response_mode must be 'iar-post', 'iar-post.jwt', 'iae_post' or 'iae_post.jwt'"
+            )
         }
     }
 
