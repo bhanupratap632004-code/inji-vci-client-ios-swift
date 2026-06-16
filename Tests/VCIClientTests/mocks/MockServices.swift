@@ -16,7 +16,8 @@ final class MockAuthServerResolver: AuthorizationServerResolver {
             grantTypesSupported: mockGrantTypesSupported,
             tokenEndpoint: mockTokenEndpoint,
             authorizationEndpoint: nil,
-            interactiveAuthorizationEndpoint: mockInteractiveAuthorizationEndpoint
+            interactiveAuthorizationEndpoint: mockInteractiveAuthorizationEndpoint,
+            requireInteractiveAuthorizationRequest: nil
         )
     }
 
@@ -27,7 +28,8 @@ final class MockAuthServerResolver: AuthorizationServerResolver {
             grantTypesSupported: mockGrantTypesSupported,
             tokenEndpoint: mockTokenEndpoint,
             authorizationEndpoint: mcokAuthorizationEndpoint,
-            interactiveAuthorizationEndpoint: mockInteractiveAuthorizationEndpoint
+            interactiveAuthorizationEndpoint: mockInteractiveAuthorizationEndpoint,
+            requireInteractiveAuthorizationRequest: nil
         )
     }
 }
