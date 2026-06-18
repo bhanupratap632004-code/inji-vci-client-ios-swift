@@ -2,14 +2,14 @@ import Foundation
 
 final class PresentationInteractionResponse: InteractionResponse, Decodable {
     var openid4vpRequest: [String: Any]
-
+    
     private enum CodingKeys: String, CodingKey {
         case status
         case type
         case authSession = "auth_session"
         case openid4vpRequest = "openid4vp_request"
     }
-
+    
     init(json: [String: Any]) throws {
         guard let request = json["openid4vp_request"] as? [String: Any] else {
             throw IllegalArgumentException("Missing or invalid 'openid4vp_request'")
@@ -24,7 +24,7 @@ final class PresentationInteractionResponse: InteractionResponse, Decodable {
         let status = try container.decode(String.self, forKey: .status)
         let type = try container.decode(String.self, forKey: .type)
         let authSession = try container.decode(String.self, forKey: .authSession)
-
+        
         if let nestedDecoder = try? container.superDecoder(forKey: .openid4vpRequest) {
             let any = try PresentationInteractionResponse.decodeAny(from: nestedDecoder)
             guard let dict = any as? [String: Any] else {
@@ -41,7 +41,7 @@ final class PresentationInteractionResponse: InteractionResponse, Decodable {
         }
         try super.init(status: status, type: type,  authSession: authSession)
     }
-
+    
     private static func decodeAny(from decoder: Decoder) throws -> Any {
         if var arrayContainer = try? decoder.unkeyedContainer() {
             var arr: [Any] = []
@@ -72,7 +72,7 @@ final class PresentationInteractionResponse: InteractionResponse, Decodable {
         }
         throw ValidationError.invalid("Unsupported JSON value")
     }
-
+    
     private struct DynamicCodingKeys: CodingKey {
         var stringValue: String
         init?(stringValue: String) { self.stringValue = stringValue }
@@ -81,18 +81,91 @@ final class PresentationInteractionResponse: InteractionResponse, Decodable {
     }
     
     override func validate() throws {
-        guard let type = type, type == "openid4vp_presentation" else {
-            throw IllegalArgumentException("Invalid type: expected 'openid4vp_presentation'")
+        
+        guard let type = type,
+              type == "openid4vp_presentation"
+                || type == "urn:openid:dcp:iae:openid4vp_presentation"
+        else {
+            throw IllegalArgumentException(
+                "Invalid type: expected 'openid4vp_presentation' or 'urn:openid:dcp:iae:openid4vp_presentation'"
+            )
         }
-
+        
         guard !openid4vpRequest.isEmpty else {
             throw IllegalArgumentException("openid4vpRequest must not be empty")
         }
+        if openid4vpRequest.keys.contains("request") {
+            // library validation only checks presence
+            return
+        }
+
+        if openid4vpRequest.keys.contains("request_uri") {
+            // verifier-hosted request objects are allowed
+            return
+        }
+
+        try validateUnsignedRequest()
+    }
+    
+    private func validateUnsignedRequest() throws {
+        guard let responseType = openid4vpRequest["response_type"] as? String else {
+            throw ValidationError.missing("response_type")
+        }
+
+        guard responseType == "vp_token" else {
+            throw ValidationError.invalid("response_type")
+        }
+
+        // response_mode optional for library validation
+        if openid4vpRequest["response_mode"] != nil {
+            try validateResponseMode(openid4vpRequest)
+        }
+    }
+    
+    private func validateSignedRequest() throws {
+        guard let jwt = openid4vpRequest["request"] as? String else {
+            throw IllegalArgumentException("Missing or invalid 'request' JWT")
+        }
+        // Actual JWT validation is delegated to the OID4VP library.
+    }
+    
+    private func validateResponseMode(_ vpRequest: [String: Any]) throws {
+        guard let responseMode = vpRequest["response_mode"] as? String else {
+            throw IllegalArgumentException("Missing or invalid 'response_mode'")
+        }
+        
+        guard responseMode == "iar-post"
+                || responseMode == "iar-post.jwt"
+                || responseMode == "iae_post"
+                || responseMode == "iae_post.jwt"
+        else {
+            throw IllegalArgumentException(
+                "response_mode must be 'iar-post', 'iar-post.jwt', 'iae_post' or 'iae_post.jwt'"
+            )
+        }
+    }
+    
+    private func decodeJwtPayload(jwt: String) throws -> [String: Any] {
+        let parts = jwt.split(separator: ".")
+        
+        guard parts.count == 3 else {
+            throw ValidationError.malformedJwt
+        }
+        
+        guard let data = try? Data(base64URLEncodedString: String(parts[1])) else {
+            throw ValidationError.malformedJwt
+        }
+        
+        let json = try JSONSerialization.jsonObject(with: data, options: [])
+        
+        guard let dict = json as? [String: Any] else {
+            throw ValidationError.invalid("jwt payload")
+        }
+        
+        return dict
     }
 }
-
-
-
+       
 enum ValidationError: Error {
     case invalidStatus(String)
     case invalidType(String)
@@ -101,4 +174,5 @@ enum ValidationError: Error {
     case missing(String)
     case invalid(String)
     case blank(String)
+    case malformedJwt
 }
