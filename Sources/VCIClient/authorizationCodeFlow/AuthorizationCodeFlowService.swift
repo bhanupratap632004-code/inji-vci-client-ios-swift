@@ -230,7 +230,8 @@ class AuthorizationCodeFlowService {
     ) async throws -> String {
         let interactiveEndpoint = authorizationServerMetadata.interactiveAuthorizationEndpoint
 
-        if let interactiveEndpoint {
+        if authorizationServerMetadata.requireInteractiveAuthorizationRequest == true,
+           let interactiveEndpoint {
             do {
                 return try await obtainAuthorizationCodeViaInteractiveAuthorizationEndpoint(
                     endpoint: interactiveEndpoint,

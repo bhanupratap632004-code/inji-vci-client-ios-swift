@@ -94,85 +94,17 @@ final class PresentationInteractionResponse: InteractionResponse, Decodable {
         guard !openid4vpRequest.isEmpty else {
             throw IllegalArgumentException("openid4vpRequest must not be empty")
         }
-        if openid4vpRequest.keys.contains("request") {
-            // library validation only checks presence
-            return
-        }
-
-        if openid4vpRequest.keys.contains("request_uri") {
-            // verifier-hosted request objects are allowed
-            return
-        }
-
-        try validateUnsignedRequest()
     }
     
-    private func validateUnsignedRequest() throws {
-        guard let responseType = openid4vpRequest["response_type"] as? String else {
-            throw ValidationError.missing("response_type")
-        }
-
-        guard responseType == "vp_token" else {
-            throw ValidationError.invalid("response_type")
-        }
-
-        // response_mode optional for library validation
-        if openid4vpRequest["response_mode"] != nil {
-            try validateResponseMode(openid4vpRequest)
-        }
-    }
     
-    private func validateSignedRequest() throws {
-        guard let jwt = openid4vpRequest["request"] as? String else {
-            throw IllegalArgumentException("Missing or invalid 'request' JWT")
-        }
-        // Actual JWT validation is delegated to the OID4VP library.
+    enum ValidationError: Error {
+        case invalidStatus(String)
+        case invalidType(String)
+        case blankAuthSession
+        case emptyOpenId4VpRequest
+        case missing(String)
+        case invalid(String)
+        case blank(String)
+        
     }
-    
-    private func validateResponseMode(_ vpRequest: [String: Any]) throws {
-        guard let responseMode = vpRequest["response_mode"] as? String else {
-            throw IllegalArgumentException("Missing or invalid 'response_mode'")
-        }
-        
-        guard responseMode == "iar-post"
-                || responseMode == "iar-post.jwt"
-                || responseMode == "iae_post"
-                || responseMode == "iae_post.jwt"
-        else {
-            throw IllegalArgumentException(
-                "response_mode must be 'iar-post', 'iar-post.jwt', 'iae_post' or 'iae_post.jwt'"
-            )
-        }
-    }
-    
-    private func decodeJwtPayload(jwt: String) throws -> [String: Any] {
-        let parts = jwt.split(separator: ".")
-        
-        guard parts.count == 3 else {
-            throw ValidationError.malformedJwt
-        }
-        
-        guard let data = try? Data(base64URLEncodedString: String(parts[1])) else {
-            throw ValidationError.malformedJwt
-        }
-        
-        let json = try JSONSerialization.jsonObject(with: data, options: [])
-        
-        guard let dict = json as? [String: Any] else {
-            throw ValidationError.invalid("jwt payload")
-        }
-        
-        return dict
-    }
-}
-       
-enum ValidationError: Error {
-    case invalidStatus(String)
-    case invalidType(String)
-    case blankAuthSession
-    case emptyOpenId4VpRequest
-    case missing(String)
-    case invalid(String)
-    case blank(String)
-    case malformedJwt
 }
