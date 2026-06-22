@@ -88,22 +88,33 @@ class AuthorizationServerResolver {
                 "Grant type '\(expectedGrantType)' not supported by auth server."
             )
         }
-        if expectedGrantType == GrantType.authorizationCode.rawValue,
-           // either authorization_endpoint or interactive_authorization_endpoint is required
-           (authServerMetadata.authorizationEndpoint == nil ||
-            authServerMetadata.authorizationEndpoint?.isEmpty == true) &&
-           (
-               (authServerMetadata.interactiveAuthorizationEndpoint == nil ||
-                authServerMetadata.interactiveAuthorizationEndpoint?.isEmpty == true)
-               &&
-               authServerMetadata.requireInteractiveAuthorizationRequest != true
-           )
-        {
-            throw AuthorizationServerDiscoveryException(
-                "Missing authorization_endpoint for authorization_code flow."
-            )
-        }
+        if expectedGrantType == GrantType.authorizationCode.rawValue {
 
+            let hasAuthorizationEndpoint =
+                !(authServerMetadata.authorizationEndpoint?
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .isEmpty ?? true)
+
+            let hasInteractiveEndpoint =
+                !(authServerMetadata.interactiveAuthorizationEndpoint?
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .isEmpty ?? true)
+
+            if authServerMetadata.requireInteractiveAuthorizationRequest == true,
+               !hasInteractiveEndpoint {
+
+                throw AuthorizationServerDiscoveryException(
+                    "Missing interactive_authorization_endpoint for required interactive authorization."
+                )
+            }
+
+            if !hasAuthorizationEndpoint && !hasInteractiveEndpoint {
+
+                throw AuthorizationServerDiscoveryException(
+                    "Missing authorization_endpoint for authorization_code flow."
+                )
+            }
+        }
         return authServerMetadata
     }
 
