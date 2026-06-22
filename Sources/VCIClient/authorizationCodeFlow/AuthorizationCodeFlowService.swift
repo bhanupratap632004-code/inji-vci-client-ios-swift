@@ -228,11 +228,21 @@ class AuthorizationCodeFlowService {
         credentialConfigurationId: String,
         authorizationMethods: [AuthorizationMethod]
     ) async throws -> String {
+        
+        let interactiveEndpoint = authorizationServerMetadata.interactiveAuthorizationEndpoint?
+
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let hasInteractiveEndpoint = !(interactiveEndpoint?.isEmpty ?? true)
+
         if authorizationServerMetadata.requireInteractiveAuthorizationRequest == true ||
-            authorizationServerMetadata.interactiveAuthorizationEndpoint != nil {
-            
-            guard let interactiveEndpoint = authorizationServerMetadata.interactiveAuthorizationEndpoint else {
+
+           hasInteractiveEndpoint {
+
+            guard let interactiveEndpoint, hasInteractiveEndpoint else {
+
                 throw DownloadFailedException(message: "Missing interactive authorization endpoint")
+
             }
             
             do {
