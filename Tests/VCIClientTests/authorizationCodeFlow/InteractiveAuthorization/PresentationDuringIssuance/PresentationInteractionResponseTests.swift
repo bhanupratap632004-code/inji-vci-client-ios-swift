@@ -135,36 +135,34 @@ final class PresentationInteractionResponseTests: XCTestCase {
 
         XCTAssertNoThrow(try response.validate())
     }
+    
+    func testValidate_acceptsSupportedResponseModes() throws {
 
-    func testValidate_acceptsIaePostResponseMode() throws {
-        let response = try PresentationInteractionResponse(
-            json: [
-                "status": "require_interaction",
-                "type": "openid4vp_presentation",
-                "auth_session": "session-1",
-                "openid4vp_request": [
-                    "response_type": "vp_token",
-                    "response_mode": "iae_post"
+        let responseModes = [
+            "iae_post",
+            "iae_post.jwt"
+        ]
+
+        for mode in responseModes {
+
+            let response = try PresentationInteractionResponse(
+                json: [
+                    "status": "require_interaction",
+                    "type": "openid4vp_presentation",
+                    "auth_session": "session-1",
+                    "openid4vp_request": [
+                        "response_type": "vp_token",
+                        "response_mode": mode
+                    ]
                 ]
-            ]
-        )
+            )
 
-        XCTAssertNoThrow(try response.validate())
+            XCTAssertNoThrow(
+                try response.validate(),
+                "Expected response mode \(mode) to be accepted"
+            )
+        }
     }
-
-    func testValidate_acceptsIaePostJwtResponseMode() throws {
-        let response = try PresentationInteractionResponse(
-            json: [
-                "status": "require_interaction",
-                "type": "openid4vp_presentation",
-                "auth_session": "session-1",
-                "openid4vp_request": [
-                    "response_type": "vp_token",
-                    "response_mode": "iae_post.jwt"
-                ]
-            ]
-        )
-
-        XCTAssertNoThrow(try response.validate())
-    }
+   
+   
 }

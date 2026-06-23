@@ -93,37 +93,7 @@ final class PresentationInteractionResponse: InteractionResponse, Decodable {
         guard !openid4vpRequest.isEmpty else {
             throw IllegalArgumentException("openid4vpRequest must not be empty")
         }
-        if openid4vpRequest.keys.contains("request") {
-            return
-        }
-
-        if openid4vpRequest.keys.contains("request_uri") {
-            return
-        }
-
-        try validateUnsignedRequest()
-    }
-    private func validateUnsignedRequest() throws {
-        guard let responseType = openid4vpRequest["response_type"] as? String else {
-            throw ValidationError.missing("response_type")
-        }
-
-        guard responseType == "vp_token" else {
-            throw ValidationError.invalid("response_type")
-        }
-
-        // response_mode optional for library validation
-        if openid4vpRequest["response_mode"] != nil {
-            try validateResponseMode(openid4vpRequest)
-        }
-    }
-
-    private func validateSignedRequest() throws {
-        guard openid4vpRequest["request"] as? String != nil else {
-            throw IllegalArgumentException("Missing or invalid 'request' JWT")
-        }
-
-        // Actual JWT validation is delegated to the OID4VP library.
+        
     }
     private func validateResponseMode(_ vpRequest: [String: Any]) throws {
         guard let responseMode = vpRequest["response_mode"] as? String else {
