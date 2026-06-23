@@ -121,4 +121,50 @@ final class PresentationInteractionResponseTests: XCTestCase {
 
         XCTAssertThrowsError(try response.validate())
     }
+    func testValidate_acceptsDcpInteractionType() throws {
+        let response = try PresentationInteractionResponse(
+            json: [
+                "status": "require_interaction",
+                "type": "urn:openid:dcp:iae:openid4vp_presentation",
+                "auth_session": "session-1",
+                "openid4vp_request": [
+                    "response_type": "vp_token"
+                ]
+            ]
+        )
+
+        XCTAssertNoThrow(try response.validate())
+    }
+
+    func testValidate_acceptsIaePostResponseMode() throws {
+        let response = try PresentationInteractionResponse(
+            json: [
+                "status": "require_interaction",
+                "type": "openid4vp_presentation",
+                "auth_session": "session-1",
+                "openid4vp_request": [
+                    "response_type": "vp_token",
+                    "response_mode": "iae_post"
+                ]
+            ]
+        )
+
+        XCTAssertNoThrow(try response.validate())
+    }
+
+    func testValidate_acceptsIaePostJwtResponseMode() throws {
+        let response = try PresentationInteractionResponse(
+            json: [
+                "status": "require_interaction",
+                "type": "openid4vp_presentation",
+                "auth_session": "session-1",
+                "openid4vp_request": [
+                    "response_type": "vp_token",
+                    "response_mode": "iae_post.jwt"
+                ]
+            ]
+        )
+
+        XCTAssertNoThrow(try response.validate())
+    }
 }
