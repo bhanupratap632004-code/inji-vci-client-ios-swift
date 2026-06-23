@@ -139,8 +139,8 @@ final class PresentationInteractionResponseTests: XCTestCase {
     func testValidate_acceptsSupportedResponseModes() throws {
 
         let responseModes = [
-            "iae_post",
-            "iae_post.jwt"
+            "iar-post",
+            "iar-post.jwt"
         ]
 
         for mode in responseModes {
