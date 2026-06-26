@@ -213,70 +213,41 @@ final class PresentationDuringIssuanceAuthorizationMethodServiceTests: XCTestCas
         XCTAssertNotNil(network.capturedParams["openid4vp_response"])
     }
     
-    func test_full_success_flow_accepts_iae_post_response_mode() async throws {
+    func test_full_success_flow_accepts_supported_iae_response_modes() async throws {
 
-        let fake = FakeOpenID4VP()
-        let network = MockNetworkManager()
+        for responseMode in ["iae-post", "iae-post.jwt"] {
 
-        let success = AuthorizationResponse(
-            authorizationCode: "code-123",
-            status: "success",
-            error: nil,
-            errorDescription: nil,
-            authSession: "auth-session-1"
-        )
+            let fake = FakeOpenID4VP()
+            let network = MockNetworkManager()
 
-        network.responseBody =
-            String(data: try JSONEncoder().encode(success), encoding: .utf8)!
+            let success = AuthorizationResponse(
+                authorizationCode: "code-123",
+                status: "success",
+                error: nil,
+                errorDescription: nil,
+                authSession: "auth-session-1"
+            )
 
-        var request = authorizationRequest
-        request["response_mode"] = "iae-post"
+            network.responseBody =
+                String(data: try JSONEncoder().encode(success), encoding: .utf8)!
 
-        let sut = makeService(
-            openId4vp: fake,
-            network: network
-        )
+            var request = authorizationRequest
+            request["response_mode"] = responseMode
 
-        let response = try await sut.authorizeUser(
-            requestData: makeRequestData(ovpRequest: request)
-        )
+            let sut = makeService(
+                openId4vp: fake,
+                network: network
+            )
 
-        XCTAssertEqual(response.status, "success")
-        XCTAssertEqual(response.authorizationCode, "code-123")
+            let response = try await sut.authorizeUser(
+                requestData: makeRequestData(ovpRequest: request)
+            )
+
+            XCTAssertEqual(response.status, "success")
+            XCTAssertEqual(response.authorizationCode, "code-123")
+        }
     }
     
-    func test_full_success_flow_accepts_iae_post_jwt_response_mode() async throws {
-
-        let fake = FakeOpenID4VP()
-        let network = MockNetworkManager()
-
-        let success = AuthorizationResponse(
-            authorizationCode: "code-123",
-            status: "success",
-            error: nil,
-            errorDescription: nil,
-            authSession: "auth-session-1"
-        )
-
-        network.responseBody =
-            String(data: try JSONEncoder().encode(success), encoding: .utf8)!
-
-        var request = authorizationRequest
-        request["response_mode"] = "iae-post.jwt"
-
-        let sut = makeService(
-            openId4vp: fake,
-            network: network
-        )
-
-        let response = try await sut.authorizeUser(
-            requestData: makeRequestData(ovpRequest: request)
-        )
-
-        XCTAssertEqual(response.status, "success")
-        XCTAssertEqual(response.authorizationCode, "code-123")
-    }
-
     // MARK: - Empty selection
 
     func test_empty_selection_maps_to_access_denied_and_posts() async throws {
