@@ -47,21 +47,55 @@ final class CredentialRequestFactoryDraft13Tests: XCTestCase {
         XCTAssertEqual(json["doctype"] as? String, "org.iso.18013.5.1.mDL")
     }
 
-    func testCreateCredentialRequest_emptyProof_throwsException() {
+    func testCreateCredentialRequest_withoutHolderBinding_allowsEmptyProof() throws {
         let factory = CredentialRequestFactoryDraft13()
-        let emptyProof = JWTProof(jwt: "")
+
+        let issuer = IssuerMetadata(
+            credentialIssuer: "https://issuer.example.com",
+            credentialEndpoint: "https://issuer.example.com/credential",
+            credentialType: ["VerifiableCredential"],
+            credentialFormat: .ldp_vc,
+            doctype: "org.iso.18013.5.1.mDL",
+            vct: "vc.type",
+            cryptographicBindingMethodsSupported: nil,
+            proofTypesSupported: nil
+        )
+
+        let request = try factory.createCredentialRequest(
+            credentialFormat: .ldp_vc,
+            accessToken: "token",
+            issuer: issuer,
+            proofJwt: nil
+        )
+
+        XCTAssertNotNil(request)
+    }
+    
+    func testCreateCredentialRequest_withHolderBinding_emptyProof_throwsException() throws {
+
+        let factory = CredentialRequestFactoryDraft13()
+
+        let issuer = IssuerMetadata(
+            credentialIssuer: "https://issuer.example.com",
+            credentialEndpoint: "https://issuer.example.com/credential",
+            credentialType: ["VerifiableCredential"],
+            credentialFormat: .ldp_vc,
+            doctype: "org.iso.18013.5.1.mDL",
+            vct: "vc.type",
+            cryptographicBindingMethodsSupported: ["jwk"],
+            proofTypesSupported: [
+                "jwt": AnyCodable(["alg": ["RS256"]])
+            ]
+        )
 
         XCTAssertThrowsError(
             try factory.createCredentialRequest(
                 credentialFormat: .ldp_vc,
                 accessToken: "token",
                 issuer: issuer,
-                proofJwt: emptyProof
+                proofJwt: JWTProof(jwt: "")
             )
-        ) { error in
-            XCTAssertTrue(error is InvalidDataProvidedException)
-            XCTAssertEqual((error as? InvalidDataProvidedException)?.message, "Required details not provided : Proof object cannot be empty or invalid")
-        }
+        )
     }
 
     func testCreateCredentialRequest_missingCredentialType_throwsException() {

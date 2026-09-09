@@ -5,7 +5,7 @@ protocol CredentialRequestFactoryProtocol {
         credentialFormat: CredentialFormat,
         accessToken: String,
         issuer: IssuerMetadata,
-        proofJwt: Proof
+        proofJwt: Proof?
     ) throws -> URLRequest
 }
 
@@ -16,27 +16,43 @@ class CredentialRequestFactoryDraft13: CredentialRequestFactoryProtocol {
         credentialFormat: CredentialFormat,
         accessToken: String,
         issuer: IssuerMetadata,
-        proofJwt: Proof
+        proofJwt: Proof?
     ) throws -> URLRequest {
-        guard let proof = proofJwt as? JWTProof, !proof.jwt.isEmpty else {
-            throw InvalidDataProvidedException("Proof object cannot be empty or invalid")
+
+        let proof: JWTProof?
+
+        if issuer.isHolderBindingSupported {
+            guard let proofJwt,
+                  let jwtProof = proofJwt as? JWTProof,
+                  !jwtProof.jwt.isEmpty else {
+                throw InvalidDataProvidedException(
+                    "Proof object cannot be empty or invalid"
+                )
+            }
+
+            proof = jwtProof
+        } else {
+            proof = proofJwt as? JWTProof
         }
 
         let credentialRequest: CredentialRequestProtocol
 
         switch credentialFormat {
+
         case .ldp_vc:
             credentialRequest = LdpVcCredentialRequestDraft13(
                 accessToken: accessToken,
                 issuerMetaData: issuer,
                 proof: proof
             )
+
         case .mso_mdoc:
             credentialRequest = MsoMdocCredentialRequestDraft13(
                 accessToken: accessToken,
                 issuerMetaData: issuer,
                 proof: proof
             )
+
         case .vc_sd_jwt, .dc_sd_jwt:
             credentialRequest = SdJwtCredentialRequestDraft13(
                 accessToken: accessToken,
@@ -45,14 +61,24 @@ class CredentialRequestFactoryDraft13: CredentialRequestFactoryProtocol {
             )
         }
 
-        return try validateAndConstructCredentialRequest(credentialRequest: credentialRequest)
+        return try validateAndConstructCredentialRequest(
+            credentialRequest: credentialRequest
+        )
     }
 
-    func validateAndConstructCredentialRequest(credentialRequest: CredentialRequestProtocol) throws -> URLRequest {
-        let issuerMetadataValidatorResult = credentialRequest.validateIssuerMetadata()
+    func validateAndConstructCredentialRequest(
+        credentialRequest: CredentialRequestProtocol
+    ) throws -> URLRequest {
+
+        let issuerMetadataValidatorResult =
+            credentialRequest.validateIssuerMetadata()
+
         if issuerMetadataValidatorResult.isValid {
             return try credentialRequest.constructRequest()
         }
-        throw InvalidDataProvidedException("invalid fields: \(issuerMetadataValidatorResult.invalidFields.joined(separator: ", "))")
+
+        throw InvalidDataProvidedException(
+            "invalid fields: \(issuerMetadataValidatorResult.invalidFields.joined(separator: ", "))"
+        )
     }
 }
