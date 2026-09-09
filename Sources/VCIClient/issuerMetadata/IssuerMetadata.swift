@@ -14,6 +14,12 @@ public struct IssuerMetadata : Codable{
     public let vct: String?
     public let scope: String?
     public let specVersion: OID4VCIVersion
+    public let cryptographicBindingMethodsSupported: [String]?
+    public let proofTypesSupported: [String: AnyCodable]?
+    public var isHolderBindingSupported: Bool {
+        cryptographicBindingMethodsSupported != nil &&
+        proofTypesSupported != nil
+    }
 
     public init(
         credentialIssuer: String,
@@ -28,7 +34,9 @@ public struct IssuerMetadata : Codable{
         nonceEndpoint: String? = nil,
         vct: String? = nil,
         scope: String = "openId",
-        specVersion: OID4VCIVersion = .v1
+        specVersion: OID4VCIVersion = .v1,
+        cryptographicBindingMethodsSupported: [String]? = nil,
+        proofTypesSupported: [String: AnyCodable]? = nil,
     ) {
         self.credentialIssuer = credentialIssuer
         self.credentialEndpoint = credentialEndpoint
@@ -43,5 +51,7 @@ public struct IssuerMetadata : Codable{
         self.vct = vct
         self.scope = scope
         self.specVersion = specVersion
+        self.cryptographicBindingMethodsSupported = cryptographicBindingMethodsSupported
+        self.proofTypesSupported = proofTypesSupported
     }
 }

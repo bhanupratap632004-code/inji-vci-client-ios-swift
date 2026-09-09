@@ -188,6 +188,13 @@ class IssuerMetadataService {
         guard let format = CredentialFormat(rawValue: formatString ?? "") else {
             throw IssuerMetadataFetchException("Unsupported or missing credential format")
         }
+        
+        let cryptographicBindingMethodsSupported =
+            credentialType["cryptographic_binding_methods_supported"] as? [String]
+
+        let proofTypesSupported =
+            (credentialType["proof_types_supported"] as? [String: Any])?
+                .mapValues { AnyCodable($0) }
 
         let scope = credentialType["scope"] as? String ?? "openid"
         let nonceEndpoint = rawIssuerMetadata["nonce_endpoint"] as? String
@@ -212,7 +219,9 @@ class IssuerMetadataService {
                 authorizationServers: rawIssuerMetadata["authorization_servers"] as? [String],
                 nonceEndpoint: nonceEndpoint,
                 scope: scope,
-                specVersion: specVersion
+                specVersion: specVersion,
+                cryptographicBindingMethodsSupported: cryptographicBindingMethodsSupported,
+                proofTypesSupported: proofTypesSupported
             )
 
         case .ldp_vc:
@@ -228,7 +237,9 @@ class IssuerMetadataService {
                 authorizationServers: rawIssuerMetadata["authorization_servers"] as? [String],
                 nonceEndpoint: nonceEndpoint,
                 scope: scope,
-                specVersion: specVersion
+                specVersion: specVersion,
+                cryptographicBindingMethodsSupported: cryptographicBindingMethodsSupported,
+                proofTypesSupported: proofTypesSupported
             )
 
         case .vc_sd_jwt, .dc_sd_jwt:
@@ -244,7 +255,9 @@ class IssuerMetadataService {
                 nonceEndpoint: nonceEndpoint,
                 vct: vct,
                 scope: scope,
-                specVersion: specVersion
+                specVersion: specVersion,
+                cryptographicBindingMethodsSupported: cryptographicBindingMethodsSupported,
+                proofTypesSupported: proofTypesSupported
             )
         }
     }
