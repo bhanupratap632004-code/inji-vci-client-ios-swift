@@ -42,7 +42,7 @@ class PreAuthCodeFlowService {
 
             var proofs: CredentialRequestProofs? = nil
 
-            if issuerMetadata.isHolderBindingSupported {
+            if !proofBindingContext.proofTypesSupported.isEmpty {
                 let nonce = try await nonceService.fetchNonce(
                     issuerMetadata: issuerMetadata,
                     timeoutInMillis: downloadTimeoutInMillis,
@@ -100,7 +100,7 @@ class PreAuthCodeFlowService {
 
             var proof: JWTProof? = nil
 
-            if issuerMetadata.isHolderBindingSupported {
+            if !proofBindingContext.proofTypesSupported.isEmpty {
 
                 let nonce = try NonceService.extractNonceFromTokenResponse(token)
 

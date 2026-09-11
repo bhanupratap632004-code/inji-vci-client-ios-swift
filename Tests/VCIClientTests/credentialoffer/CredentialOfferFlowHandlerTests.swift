@@ -21,13 +21,19 @@ final class CredentialOfferFlowHandlerTests: XCTestCase {
                 credentialIssuer: "aud",
                 credentialEndpoint: "https://example.com",
                 credentialFormat: .ldp_vc,
-                specVersion: .draft13,
-                cryptographicBindingMethodsSupported: ["jwk"],
-                proofTypesSupported: [
-                    "jwt": AnyCodable([String: Any]())
-                ]
+                specVersion: .draft13
             ),
-            raw: [:]
+            raw: [
+                "credential_configurations_supported": [
+                    "config": [
+                        "format": "ldp_vc",
+                        "cryptographic_binding_methods_supported": ["jwk"],
+                        "proof_types_supported": [
+                            "jwt": [String: Any]()
+                        ]
+                    ]
+                ]
+            ]
         )
     }
 

@@ -188,13 +188,6 @@ class IssuerMetadataService {
         guard let format = CredentialFormat(rawValue: formatString ?? "") else {
             throw IssuerMetadataFetchException("Unsupported or missing credential format")
         }
-        
-        let cryptographicBindingMethodsSupported =
-            credentialType["cryptographic_binding_methods_supported"] as? [String]
-
-        let proofTypesSupported =
-            (credentialType["proof_types_supported"] as? [String: Any])?
-                .mapValues { AnyCodable($0) }
 
         let scope = credentialType["scope"] as? String ?? "openid"
         let nonceEndpoint = rawIssuerMetadata["nonce_endpoint"] as? String
@@ -220,8 +213,6 @@ class IssuerMetadataService {
                 nonceEndpoint: nonceEndpoint,
                 scope: scope,
                 specVersion: specVersion,
-                cryptographicBindingMethodsSupported: cryptographicBindingMethodsSupported,
-                proofTypesSupported: proofTypesSupported
             )
 
         case .ldp_vc:
@@ -238,8 +229,6 @@ class IssuerMetadataService {
                 nonceEndpoint: nonceEndpoint,
                 scope: scope,
                 specVersion: specVersion,
-                cryptographicBindingMethodsSupported: cryptographicBindingMethodsSupported,
-                proofTypesSupported: proofTypesSupported
             )
 
         case .vc_sd_jwt, .dc_sd_jwt:
@@ -256,8 +245,6 @@ class IssuerMetadataService {
                 vct: vct,
                 scope: scope,
                 specVersion: specVersion,
-                cryptographicBindingMethodsSupported: cryptographicBindingMethodsSupported,
-                proofTypesSupported: proofTypesSupported
             )
         }
     }

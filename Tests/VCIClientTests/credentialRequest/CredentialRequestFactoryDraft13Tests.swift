@@ -47,7 +47,7 @@ final class CredentialRequestFactoryDraft13Tests: XCTestCase {
         XCTAssertEqual(json["doctype"] as? String, "org.iso.18013.5.1.mDL")
     }
 
-    func testCreateCredentialRequest_withoutHolderBinding_allowsEmptyProof() throws {
+    func testCreateCredentialRequest_withoutProof_allowsNilProof() throws {
         let factory = CredentialRequestFactoryDraft13()
 
         let issuer = IssuerMetadata(
@@ -56,9 +56,7 @@ final class CredentialRequestFactoryDraft13Tests: XCTestCase {
             credentialType: ["VerifiableCredential"],
             credentialFormat: .ldp_vc,
             doctype: "org.iso.18013.5.1.mDL",
-            vct: "vc.type",
-            cryptographicBindingMethodsSupported: nil,
-            proofTypesSupported: nil
+            vct: "vc.type"
         )
 
         let request = try factory.createCredentialRequest(
@@ -71,7 +69,7 @@ final class CredentialRequestFactoryDraft13Tests: XCTestCase {
         XCTAssertNotNil(request)
     }
     
-    func testCreateCredentialRequest_withHolderBinding_emptyProof_throwsException() throws {
+    func testCreateCredentialRequest_withInvalidProof_throwsException() throws {
 
         let factory = CredentialRequestFactoryDraft13()
 
@@ -81,11 +79,7 @@ final class CredentialRequestFactoryDraft13Tests: XCTestCase {
             credentialType: ["VerifiableCredential"],
             credentialFormat: .ldp_vc,
             doctype: "org.iso.18013.5.1.mDL",
-            vct: "vc.type",
-            cryptographicBindingMethodsSupported: ["jwk"],
-            proofTypesSupported: [
-                "jwt": AnyCodable(["alg": ["RS256"]])
-            ]
+            vct: "vc.type"
         )
 
         XCTAssertThrowsError(

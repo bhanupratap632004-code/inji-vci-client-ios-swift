@@ -21,9 +21,8 @@ class CredentialRequestFactoryDraft13: CredentialRequestFactoryProtocol {
 
         let proof: JWTProof?
 
-        if issuer.isHolderBindingSupported {
-            guard let proofJwt,
-                  let jwtProof = proofJwt as? JWTProof,
+        if let proofJwt {
+            guard let jwtProof = proofJwt as? JWTProof,
                   !jwtProof.jwt.isEmpty else {
                 throw InvalidDataProvidedException(
                     "Proof object cannot be empty or invalid"
@@ -32,7 +31,7 @@ class CredentialRequestFactoryDraft13: CredentialRequestFactoryProtocol {
 
             proof = jwtProof
         } else {
-            proof = proofJwt as? JWTProof
+            proof = nil
         }
 
         let credentialRequest: CredentialRequestProtocol

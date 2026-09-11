@@ -47,11 +47,7 @@ final class PreAuthFlowServiceTests: XCTestCase {
             credentialIssuer: "https://issuer.example.com",
             credentialEndpoint: "https://issuer.example.com/credential",
             credentialFormat: .ldp_vc,
-            nonceEndpoint: "https://issuer.example.com/nonce",
-            cryptographicBindingMethodsSupported: ["jwk"],
-            proofTypesSupported: [
-                "jwt": AnyCodable([String: Any]())
-            ]
+            nonceEndpoint: "https://issuer.example.com/nonce"
         )
 
         let result = try await service.requestCredentials(
@@ -70,7 +66,10 @@ final class PreAuthFlowServiceTests: XCTestCase {
                 )
             },
             credentialConfigurationId: "mock-id",
-            proofBindingContext: ProofBindingContext(),
+            proofBindingContext: ProofBindingContext(
+                cryptographicBindingMethodsSupported: ["jwk"],
+                proofTypesSupported: ["jwt"]
+            ),
             getTxCode: { _, _, _ in
                 "tx123"
             }

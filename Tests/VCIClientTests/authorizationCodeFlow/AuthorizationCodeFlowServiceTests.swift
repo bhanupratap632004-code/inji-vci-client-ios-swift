@@ -51,11 +51,7 @@ final class AuthorizationCodeFlowServiceTests: XCTestCase {
             credentialIssuer: "https://issuer.example.com",
             credentialEndpoint: "https://issuer.example.com/credential",
             credentialFormat: .ldp_vc,
-            nonceEndpoint: "https://issuer.example.com/nonce",
-            cryptographicBindingMethodsSupported: ["jwk"],
-            proofTypesSupported: [
-                "jwt": AnyCodable([String: Any]())
-            ]
+            nonceEndpoint: "https://issuer.example.com/nonce"
         )
 
         let result = try await service.requestCredentials(
@@ -84,7 +80,9 @@ final class AuthorizationCodeFlowServiceTests: XCTestCase {
             },
             credentialConfigurationId: "vc1",
             proofBindingContext: ProofBindingContext(
-                proofSigningAlgorithmsSupported: ["rs256"]
+                proofSigningAlgorithmsSupported: ["rs256"],
+                cryptographicBindingMethodsSupported: ["jwk"],
+                proofTypesSupported: ["jwt"]
             )
         )
 
@@ -429,11 +427,7 @@ final class AuthorizationCodeFlowServiceTests: XCTestCase {
                     credentialIssuer: "https://issuer.example.com",
                     credentialEndpoint: "https://issuer.example.com/credential",
                     credentialFormat: .ldp_vc,
-                    nonceEndpoint: "https://issuer.example.com/nonce",
-                    cryptographicBindingMethodsSupported: ["jwk"],
-                    proofTypesSupported: [
-                        "jwt": AnyCodable([String: Any]())
-                    ]
+                    nonceEndpoint: "https://issuer.example.com/nonce"
                 ),
                 clientMetadata: ClientMetadata(clientId: "client123", redirectUri: "app://redirect"),
                 authorizationMethods: [
@@ -445,7 +439,9 @@ final class AuthorizationCodeFlowServiceTests: XCTestCase {
                 },
                 credentialConfigurationId: "vc1",
                 proofBindingContext: ProofBindingContext(
-                    proofSigningAlgorithmsSupported: ["rs256"]
+                    proofSigningAlgorithmsSupported: ["rs256"],
+                    cryptographicBindingMethodsSupported: ["jwk"],
+                    proofTypesSupported: ["jwt"]
                 )
             )
             XCTFail("Expected proof callback failure")
