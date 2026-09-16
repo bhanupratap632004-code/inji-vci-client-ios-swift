@@ -37,7 +37,7 @@ struct ProofBindingContext {
         self.proofTypesSupported = proofTypesSupported
     }
 
-    func isHolderBindingSupported() -> Bool {
+    func requiresProof() -> Bool {
         !cryptographicBindingMethodsSupported.isEmpty &&
         !proofTypesSupported.isEmpty
     }

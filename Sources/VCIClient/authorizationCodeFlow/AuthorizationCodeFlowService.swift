@@ -52,7 +52,7 @@ class AuthorizationCodeFlowService {
 
             var proofs: CredentialRequestProofs? = nil
 
-            if !proofBindingContext.proofTypesSupported.isEmpty {
+            if proofBindingContext.requiresProof() {
 
                 let nonce = try await nonceService.fetchNonce(
                     issuerMetadata: issuerMetadata,
@@ -115,7 +115,7 @@ class AuthorizationCodeFlowService {
 
             var proof: JWTProof? = nil
 
-            if proofBindingContext.isHolderBindingSupported() {
+            if proofBindingContext.requiresProof() {
 
                 let nonce = try NonceService.extractNonceFromTokenResponse(token)
 
