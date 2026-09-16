@@ -115,7 +115,7 @@ class AuthorizationCodeFlowService {
 
             var proof: JWTProof? = nil
 
-            if !proofBindingContext.proofTypesSupported.isEmpty {
+            if proofBindingContext.isHolderBindingSupported() {
 
                 let nonce = try NonceService.extractNonceFromTokenResponse(token)
 
